@@ -1,0 +1,30 @@
+{
+  "name": "content-auto",
+  "version": "0.1.0",
+  "private": true,
+  "description": "AI-powered Figma content automation — Phase 1 local MVP",
+  "workspaces": [
+    "apps/*",
+    "packages/*",
+    "plugins/*"
+  ],
+  "scripts": {
+    "build": "npm run build -w @content-auto/shared && npm run build -w @content-auto/content && npm run build -w @content-auto/design-engine && npm run build -w @content-auto/ai && npm run build -w @content-auto/storage && npm run build -w @content-auto/workflows && npm run build -w @content-auto/api && npm run build -w @content-auto/dashboard && npm run build -w @content-auto/figma-plugin",
+    "dev:api": "npm run dev -w @content-auto/api",
+    "dev:dashboard": "npm run dev -w @content-auto/dashboard",
+    "dev": "npm run build:packages && concurrently -n api,dash -c blue,magenta \"npm run dev:api\" \"npm run dev:dashboard\"",
+    "build:packages": "npm run build -w @content-auto/shared && npm run build -w @content-auto/content && npm run build -w @content-auto/design-engine && npm run build -w @content-auto/ai && npm run build -w @content-auto/storage && npm run build -w @content-auto/workflows",
+    "typecheck": "npm run typecheck -w @content-auto/shared && npm run typecheck -w @content-auto/content && npm run typecheck -w @content-auto/design-engine && npm run typecheck -w @content-auto/ai && npm run typecheck -w @content-auto/storage && npm run typecheck -w @content-auto/workflows && npm run typecheck -w @content-auto/api && npm run typecheck -w @content-auto/dashboard",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "echo \"No linter configured for Phase 1\""
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2",
+    "typescript": "^5.8.2",
+    "vitest": "^3.0.9"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

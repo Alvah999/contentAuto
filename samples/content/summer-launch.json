@@ -1,0 +1,55 @@
+{
+  "id": "summer-launch",
+  "title": "Summer Launch Campaign",
+  "brand": "Northwind Outdoor",
+  "channel": "instagram-story",
+  "language": "en",
+  "sections": [
+    {
+      "id": "s1",
+      "role": "headline",
+      "text": "Adventure starts this summer",
+      "order": 1
+    },
+    {
+      "id": "s2",
+      "role": "subhead",
+      "text": "Lightweight gear for trails that never quit.",
+      "order": 2
+    },
+    {
+      "id": "s3",
+      "role": "body",
+      "text": "From alpine ridges to weekend getaways, our new Summer Collection is built for movement, weather, and the unexpected.",
+      "order": 3
+    },
+    {
+      "id": "s4",
+      "role": "bullet",
+      "text": "Breathable 4-way stretch",
+      "order": 4
+    },
+    {
+      "id": "s5",
+      "role": "bullet",
+      "text": "Packable layers under 300g",
+      "order": 5
+    },
+    {
+      "id": "s6",
+      "role": "cta",
+      "text": "Shop the drop",
+      "order": 6
+    },
+    {
+      "id": "s7",
+      "role": "caption",
+      "text": "Available online and in select stores.",
+      "order": 7
+    }
+  ],
+  "metadata": {
+    "campaign": "SUMMER-2026",
+    "owner": "marketing"
+  }
+}

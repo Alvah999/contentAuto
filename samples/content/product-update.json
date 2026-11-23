@@ -1,0 +1,45 @@
+{
+  "id": "product-update",
+  "title": "Product Update Email Hero",
+  "brand": "Lumen Analytics",
+  "channel": "email-hero",
+  "language": "en",
+  "sections": [
+    {
+      "id": "p1",
+      "role": "headline",
+      "text": "Insights that ship with you",
+      "order": 1
+    },
+    {
+      "id": "p2",
+      "role": "subhead",
+      "text": "New dashboards, faster sync, clearer decisions.",
+      "order": 2
+    },
+    {
+      "id": "p3",
+      "role": "body",
+      "text": "Lumen 3.2 brings scheduled reports, anomaly alerts, and shared workspaces so teams stay aligned without another meeting.",
+      "order": 3
+    },
+    {
+      "id": "p4",
+      "role": "bullet",
+      "text": "Real-time anomaly alerts",
+      "order": 4
+    },
+    {
+      "id": "p5",
+      "role": "bullet",
+      "text": "One-click shared workspaces",
+      "order": 5
+    },
+    {
+      "id": "p6",
+      "role": "cta",
+      "text": "Explore what's new",
+      "order": 6
+    }
+  ]
+}
