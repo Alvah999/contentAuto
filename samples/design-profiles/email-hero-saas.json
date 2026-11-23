@@ -1,0 +1,49 @@
+{
+  "id": "email-hero-saas",
+  "name": "Email Hero — SaaS",
+  "description": "Wide email hero reference profile for product updates.",
+  "canvas": {
+    "width": 1200,
+    "height": 628,
+    "unit": "px"
+  },
+  "colors": {
+    "background": "#F7F8FA",
+    "primary": "#2563EB",
+    "secondary": "#64748B",
+    "text": "#0F172A",
+    "accent": "#0EA5E9"
+  },
+  "typography": {
+    "headline": {
+      "fontFamily": "Inter",
+      "fontSize": 48,
+      "fontWeight": 700,
+      "lineHeight": 1.2
+    },
+    "subhead": {
+      "fontFamily": "Inter",
+      "fontSize": 24,
+      "fontWeight": 500,
+      "lineHeight": 1.35
+    },
+    "body": {
+      "fontFamily": "Inter",
+      "fontSize": 18,
+      "fontWeight": 400,
+      "lineHeight": 1.5
+    },
+    "cta": {
+      "fontFamily": "Inter",
+      "fontSize": 16,
+      "fontWeight": 600,
+      "lineHeight": 1.2
+    }
+  },
+  "layout": {
+    "padding": 48,
+    "gap": 20,
+    "columns": 1
+  },
+  "referenceNote": "Reference-only profile. Export creates a new design via plugin."
+}
