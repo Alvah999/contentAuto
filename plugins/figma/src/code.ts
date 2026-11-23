@@ -46,26 +46,27 @@ figma.ui.onmessage = async (msg: { type: string; spec?: DesignSpec }) => {
   }
 
   if (msg.type === "import-spec") {
+    let rootNode: SceneNode | null = null;
     try {
       if (!msg.spec || msg.spec.version !== "1.0" || !msg.spec.root) {
         throw new Error("Spec must be DesignSpec v1.0 with a root layer");
       }
       await ensureFonts(msg.spec.root);
-      const root = await createLayer(msg.spec.root, null);
-      if ("resize" in root) {
-        // place near viewport center
-        const viewport = figma.viewport.center;
-        root.x = viewport.x - msg.spec.canvas.width / 2;
-        root.y = viewport.y - msg.spec.canvas.height / 2;
-      }
-      figma.currentPage.selection = [root];
-      figma.viewport.scrollAndZoomIntoView([root]);
+      rootNode = await createLayer(msg.spec.root, null);
+      const viewport = figma.viewport.center;
+      rootNode.x = viewport.x - msg.spec.canvas.width / 2;
+      rootNode.y = viewport.y - msg.spec.canvas.height / 2;
+      figma.currentPage.selection = [rootNode];
+      figma.viewport.scrollAndZoomIntoView([rootNode]);
       figma.ui.postMessage({
         type: "result",
         ok: true,
-        message: `Created editable frame “${root.name}” from ${msg.spec.id}. Reference templates untouched.`,
+        message: `Created editable frame “${rootNode.name}” from ${msg.spec.id}. Reference templates untouched.`,
       });
     } catch (err) {
+      if (rootNode) {
+        rootNode.remove();
+      }
       figma.ui.postMessage({
         type: "result",
         ok: false,
@@ -76,7 +77,10 @@ figma.ui.onmessage = async (msg: { type: string; spec?: DesignSpec }) => {
 };
 
 function hexToRgb(hex: string): RGB {
-  const cleaned = hex.replace("#", "");
+  const cleaned = hex.trim().replace(/^#/, "");
+  if (!/^[0-9a-fA-F]{3}$|^[0-9a-fA-F]{6}$/.test(cleaned)) {
+    throw new Error(`Invalid hex color: ${hex}`);
+  }
   const full =
     cleaned.length === 3
       ? cleaned
@@ -122,9 +126,14 @@ function weightToStyle(weight: number): string {
   return "Regular";
 }
 
+/**
+ * Create a node, append to parent (or page), then set x/y.
+ * Figma preserves absolute coords on reparent — so position must be set after appendChild
+ * for parent-relative DesignSpec coordinates to land correctly.
+ */
 async function createLayer(
   layer: DesignLayer,
-  parent: BaseNode & ChildrenMixin | null,
+  parent: (BaseNode & ChildrenMixin) | null,
 ): Promise<SceneNode> {
   let node: SceneNode;
 
@@ -133,8 +142,6 @@ async function createLayer(
       const frame = figma.createFrame();
       frame.name = layer.name;
       frame.resize(layer.width, layer.height);
-      frame.x = layer.x;
-      frame.y = layer.y;
       frame.fills = (layer.fills ?? []).map(toPaint);
       if (layer.cornerRadius != null) frame.cornerRadius = layer.cornerRadius;
       node = frame;
@@ -144,8 +151,6 @@ async function createLayer(
       const rect = figma.createRectangle();
       rect.name = layer.name;
       rect.resize(layer.width, layer.height);
-      rect.x = layer.x;
-      rect.y = layer.y;
       rect.fills = (layer.fills ?? []).map(toPaint);
       if (layer.cornerRadius != null) rect.cornerRadius = layer.cornerRadius;
       if (layer.strokes?.length) {
@@ -159,8 +164,6 @@ async function createLayer(
       const ellipse = figma.createEllipse();
       ellipse.name = layer.name;
       ellipse.resize(layer.width, layer.height);
-      ellipse.x = layer.x;
-      ellipse.y = layer.y;
       ellipse.fills = (layer.fills ?? []).map(toPaint);
       node = ellipse;
       break;
@@ -168,8 +171,6 @@ async function createLayer(
     case "LINE": {
       const line = figma.createLine();
       line.name = layer.name;
-      line.x = layer.x;
-      line.y = layer.y;
       line.resize(layer.width, 0);
       if (layer.strokes?.length) {
         line.strokes = layer.strokes.map(toPaint);
@@ -211,8 +212,6 @@ async function createLayer(
       if (layer.text?.textAlignHorizontal) {
         text.textAlignHorizontal = layer.text.textAlignHorizontal;
       }
-      text.x = layer.x;
-      text.y = layer.y;
       text.resize(layer.width, layer.height);
       node = text;
       break;
@@ -226,6 +225,10 @@ async function createLayer(
   } else {
     figma.currentPage.appendChild(node);
   }
+
+  // Set relative position after parenting so Figma does not treat x/y as absolute.
+  node.x = layer.x;
+  node.y = layer.y;
 
   if (layer.children?.length && "appendChild" in node) {
     for (const child of layer.children) {

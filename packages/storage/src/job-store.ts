@@ -8,6 +8,8 @@ export interface JobStore {
   save(job: Job): Promise<Job>;
 }
 
+const SAFE_JOB_ID = /^[a-zA-Z0-9_-]+$/;
+
 export class JsonJobStore implements JobStore {
   constructor(private readonly dir: string) {}
 
@@ -15,8 +17,22 @@ export class JsonJobStore implements JobStore {
     await mkdir(this.dir, { recursive: true });
   }
 
+  /** Reject path traversal and absolute segments in job ids. */
+  private assertSafeId(id: string): string {
+    if (!id || !SAFE_JOB_ID.test(id)) {
+      throw new Error(`Invalid job id: ${id}`);
+    }
+    return id;
+  }
+
   private filePath(id: string): string {
-    return path.join(this.dir, `${id}.json`);
+    const safe = this.assertSafeId(id);
+    const root = path.resolve(this.dir);
+    const resolved = path.resolve(root, `${safe}.json`);
+    if (resolved !== path.join(root, `${safe}.json`)) {
+      throw new Error(`Invalid job id path: ${id}`);
+    }
+    return resolved;
   }
 
   async list(): Promise<Job[]> {
@@ -36,7 +52,10 @@ export class JsonJobStore implements JobStore {
     try {
       const raw = await readFile(this.filePath(id), "utf8");
       return JSON.parse(raw) as Job;
-    } catch {
+    } catch (err) {
+      if (err instanceof Error && err.message.startsWith("Invalid job id")) {
+        throw err;
+      }
       return null;
     }
   }

@@ -201,7 +201,9 @@ export async function createApp() {
       const message = err instanceof Error ? err.message : "Unknown error";
       const status = message.includes("not found")
         ? 404
-        : message.includes("Invalid status")
+        : message.includes("Invalid status") ||
+            message.includes("Invalid job id") ||
+            message.includes("Cannot mark job as generated")
           ? 400
           : 500;
       res.status(status).json({ error: message });

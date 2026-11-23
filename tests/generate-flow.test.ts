@@ -90,4 +90,22 @@ describe("generate design happy path", () => {
     const loaded = await store.get(job.id);
     expect(loaded?.status).toBe("exported");
   });
+
+  it("rejects marking draft as generated without a design spec", async () => {
+    const store = new JsonJobStore(dir);
+    const now = new Date().toISOString();
+    await store.save({
+      id: "no-spec-job",
+      status: "draft",
+      contentId: script.id,
+      profileId: profile.id,
+      title: "No Spec",
+      createdAt: now,
+      updatedAt: now,
+    });
+
+    await expect(updateJobStatus(store, "no-spec-job", "generated")).rejects.toThrow(
+      /without a design spec/,
+    );
+  });
 });

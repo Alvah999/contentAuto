@@ -1,5 +1,11 @@
 import { useEffect, useState } from "react";
-import type { ContentScript, DesignProfile, Job, JobStatus } from "@content-auto/shared";
+import {
+  JOB_STATUS_TRANSITIONS,
+  type ContentScript,
+  type DesignProfile,
+  type Job,
+  type JobStatus,
+} from "@content-auto/shared";
 import {
   fetchContent,
   fetchHealth,
@@ -36,6 +42,19 @@ export function App() {
 
   const selected = jobs.find((j) => j.id === selectedId) ?? null;
 
+  const availableActions = selected
+    ? REVIEW_ACTIONS.filter((action) => {
+        if (!JOB_STATUS_TRANSITIONS[selected.status].includes(action.status)) {
+          return false;
+        }
+        // Never offer "generated" without an existing design spec
+        if (action.status === "generated" && !selected.designSpec) {
+          return false;
+        }
+        return true;
+      })
+    : [];
+
   async function refresh() {
     const [c, p, j, h] = await Promise.all([
       fetchContent(),
@@ -55,13 +74,19 @@ export function App() {
     refresh().catch((err: Error) => setError(err.message));
   }, []);
 
+  function selectJob(job: Job) {
+    setSelectedId(job.id);
+    setNotes(job.reviewNotes ?? "");
+    setError(null);
+  }
+
   async function onGenerate() {
     setBusy(true);
     setError(null);
     try {
       const job = await generateDesign(contentId, profileId);
       await refresh();
-      setSelectedId(job.id);
+      selectJob(job);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Generate failed");
     } finally {
@@ -76,7 +101,7 @@ export function App() {
     try {
       const job = await updateStatus(selected.id, status, notes || undefined);
       await refresh();
-      setSelectedId(job.id);
+      selectJob(job);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Status update failed");
     } finally {
@@ -167,7 +192,7 @@ export function App() {
                 <li key={job.id}>
                   <button
                     className={`job-item ${selectedId === job.id ? "active" : ""}`}
-                    onClick={() => setSelectedId(job.id)}
+                    onClick={() => selectJob(job)}
                   >
                     <span className="title">{job.title}</span>
                     <span className={`status ${job.status}`}>{job.status}</span>
@@ -207,16 +232,20 @@ export function App() {
               </div>
 
               <div className="actions">
-                {REVIEW_ACTIONS.map((action) => (
-                  <button
-                    key={action.status}
-                    className={action.className}
-                    disabled={busy}
-                    onClick={() => onStatus(action.status)}
-                  >
-                    {action.label}
-                  </button>
-                ))}
+                {availableActions.length === 0 ? (
+                  <span className="empty">No further transitions from {selected.status}.</span>
+                ) : (
+                  availableActions.map((action) => (
+                    <button
+                      key={action.status}
+                      className={action.className}
+                      disabled={busy}
+                      onClick={() => onStatus(action.status)}
+                    >
+                      {action.label}
+                    </button>
+                  ))
+                )}
               </div>
 
               {selected.normalizedContent ? (

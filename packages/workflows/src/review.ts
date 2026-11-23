@@ -15,6 +15,12 @@ export async function updateJobStatus(
 
   assertTransition(job.status, status);
 
+  if (status === "generated" && !job.designSpec) {
+    throw new Error(
+      "Cannot mark job as generated without a design spec. Run generate first.",
+    );
+  }
+
   const updated: Job = {
     ...job,
     status,
